@@ -1,11 +1,11 @@
 import CustomCursor from "@/components/CustomCursor";
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Syne, JetBrains_Mono } from "next/font/google";
 import AppNavbar from "@/components/AppNavbar";
 import Footer from "@/components/Footer";
 import DeferredVercelMetrics from "@/components/DeferredVercelMetrics";
 import Providers from "./providers";
-import PWARegister from "@/components/pwa-register";
+import OfflineBanner from "@/components/OfflineBanner";
 import "./globals.css";
 import { Toaster } from "sonner";
 
@@ -88,7 +88,7 @@ export default async function RootLayout({
         className={`${inter.className} min-h-screen bg-[var(--background)] text-[var(--foreground)]`}
       >
         <CustomCursor />
-        <PWARegister />
+        <OfflineBanner />
 
         <div className="flex min-h-screen flex-col">
           <div className="flex-1">

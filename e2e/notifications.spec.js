@@ -54,7 +54,7 @@ function mockMetricResponse(url) {
 
 test.beforeEach(async ({ page }) => {
   const token = await encode({
-    secret: process.env.NEXTAUTH_SECRET ?? authSecret,
+    secret: process.env.NEXTAUTH_SECRET || authSecret,
     token: {
       name: "Playwright User",
       email: "playwright@example.com",
