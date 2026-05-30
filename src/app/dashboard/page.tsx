@@ -1,4 +1,4 @@
-import LazyWidget from "@/components/LazyWidget";
+﻿import LazyWidget from "@/components/LazyWidget";
 import DiscussionsWidget from "@/components/DiscussionsWidget";
 import CommunityMetrics from "@/components/CommunityMetrics";
 import GoalTracker from "@/components/GoalTracker";
@@ -22,6 +22,7 @@ import PersonalRecords from "@/components/PersonalRecords";
 import LocalCodingTime from "@/components/LocalCodingTime";
 import CodingTimeWidget from "@/components/CodingTimeWidget";
 import RecentActivity from "@/components/RecentActivity";
+import FriendComparison from "@/components/FriendComparison";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -55,11 +56,6 @@ const PRMetricsSkeleton = () => (
 
 const CodingActivityInsightsCard = dynamic(
   () => import("@/components/CodingActivityInsightsCard"),
-  { ssr: false, loading: () => <SkeletonCard /> },
-);
-
-const FriendComparison = dynamic(
-  () => import("@/components/FriendComparison"),
   { ssr: false, loading: () => <SkeletonCard /> },
 );
 
@@ -108,24 +104,29 @@ export default async function DashboardPage() {
         <DashboardHeader />
 
         {/* Quick actions */}
-        <div className="mt-8 mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Left side actions */}
-          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <Link
-              href="/wrapped"
-              className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-xl border border-[var(--accent)] bg-[var(--accent)]/10 px-5 py-2.5 text-sm font-semibold text-[var(--accent)] shadow-sm shadow-[var(--accent)]/20 transition-all hover:bg-[var(--accent)]/20 hover:scale-[1.02]"
-            >
-              Year in Code
-            </Link>
-            <Link
-              href="/dashboard/settings"
-              className="inline-flex w-full sm:w-auto justify-center items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-medium transition-all hover:bg-white/10 hover:scale-[1.02]"
-            >
-              Settings
-            </Link>
-          </div>
-          {/* Right side exports */}
-          <div className="w-full sm:w-auto">
+        <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
+          <Link
+            href="/wrapped"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-4 py-2 text-sm font-semibold text-[var(--accent)] transition-opacity hover:opacity-90"
+          >
+            ✨ Year in Code
+          </Link>
+          <Link
+            href="/friend-compare"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--accent)] bg-[var(--accent-soft)] px-4 py-2 text-sm font-semibold text-[var(--accent)] transition-opacity hover:opacity-90"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Compare Friends
+          </Link>
+          <Link
+            href="/dashboard/settings"
+            className="secondary-button inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium"
+          >
+            Settings
+          </Link>
+          <div className="sm:ml-auto">
             <ExportButton />
           </div>
         </div>
@@ -198,8 +199,60 @@ export default async function DashboardPage() {
             <h2 className="text-2xl font-bold tracking-tight">Analytics & Repositories</h2>
           </div>
 
-          {/* Repo Analytics Explorer spans full width */}
-          <div className="w-full overflow-hidden">
+          {/* Right: streak + coding time */}
+          <div className="flex flex-col gap-6">
+            <StreakTracker />
+            <LocalCodingTime />
+            <CodingTimeWidget />
+          </div>
+
+        {/* Repo analytics explorer — full width */}
+        <div className="mt-6">
+          <LazyWidget fallback={<SkeletonCard />}>
+            <RepoAnalyticsExplorer />
+          </LazyWidget>
+        </div>
+
+        {/* -- Row 2: PR metrics + Community metrics -- */}
+        <div id="pull-requests" className="mt-6 grid grid-cols-1 gap-6 scroll-mt-24 md:grid-cols-2">
+          <PRMetrics />
+          <CommunityMetrics />
+        </div>
+
+        {/* PR breakdown + commit time — 2-col so charts have room */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <LazyWidget fallback={<SkeletonCard />}>
+            <PRBreakdownChart />
+          </LazyWidget>
+          <LazyWidget fallback={<SkeletonCard />}>
+            <CommitTimeChart />
+          </LazyWidget>
+        </div>
+
+        {/* Activity ring — full width */}
+        <div className="mt-6">
+          <LazyWidget fallback={<SkeletonCard />}>
+            <ActivityRingChart />
+          </LazyWidget>
+        </div>
+
+        {/* Coding activity insights — full width */}
+        <div className="mt-6">
+          <LazyWidget fallback={<SkeletonCard />}>
+            <CodingActivityInsightsCard />
+          </LazyWidget>
+        </div>
+
+        {/* PR review trend — full width */}
+        <div className="mt-6">
+          <LazyWidget fallback={<SkeletonCard />}>
+            <PRReviewTrendChart />
+          </LazyWidget>
+        </div>
+
+        {/* -- Row 3: Issues (2/3) + CI analytics (1/3) -- */}
+        <div id="goals" className="mt-6 grid grid-cols-1 gap-6 scroll-mt-24 lg:grid-cols-3">
+          <div className="lg:col-span-2">
             <LazyWidget fallback={<SkeletonCard />}>
               <RepoAnalyticsExplorer />
             </LazyWidget>
@@ -231,6 +284,7 @@ export default async function DashboardPage() {
               </LazyWidget>
             </div>
           </div>
+        </div>
         </section>
 
         {/* 4. GOALS & INSIGHTS */}
