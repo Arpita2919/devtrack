@@ -534,6 +534,10 @@ export default function GoalTracker() {
         )}
 
         {/* Recurrence Picker */}
+        <div role="group" aria-labelledby="recurrence-label">
+          <span id="recurrence-label" className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
+            Recurrence
+          </span>
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--muted-foreground)]">
             Recurrence
