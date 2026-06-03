@@ -14,7 +14,8 @@ create table if not exists users (
   is_sponsor   boolean default false,
   discord_webhook_url text,
   timezone text default 'UTC',
-  last_discord_notification_at timestamptz
+  last_discord_notification_at timestamptz,
+  organizations_config jsonb default '{}'::jsonb
 );
 create table if not exists goals (
   id           text primary key default gen_random_uuid()::text,

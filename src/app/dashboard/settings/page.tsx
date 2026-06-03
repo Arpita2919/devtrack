@@ -148,6 +148,11 @@ function SettingsPageContent() {
   const [testingDiscord, setTestingDiscord] = useState(false);
   const [discordMutedUntil, setDiscordMutedUntil] = useState<string | null>(null);
   const [muteDuration, setMuteDuration] = useState<number>(1);
+
+  // GitHub Orgs States
+  const [orgAccounts, setOrgAccounts] = useState<any[]>([]);
+  const [orgsConfig, setOrgsConfig] = useState<Record<string, boolean>>({});
+  const [loadingOrgs, setLoadingOrgs] = useState(true);
   const [isDirty, setIsDirty] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingPath, setPendingPath] = useState<string | null>(null);
@@ -266,6 +271,47 @@ function SettingsPageContent() {
 
     loadSettings();
   }, [session, status]);
+
+  // Load organizations on mount
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    async function loadOrgs() {
+      try {
+        setLoadingOrgs(true);
+        const res = await fetch("/api/user/orgs");
+        if (res.ok) {
+          const data = await res.json();
+          setOrgAccounts(data.accounts || []);
+          setOrgsConfig(data.config || {});
+        }
+      } catch (err) {
+        console.error("Failed to load organizations:", err);
+      } finally {
+        setLoadingOrgs(false);
+      }
+    }
+    loadOrgs();
+  }, [status]);
+
+  const handleToggleOrg = async (orgLogin: string, enabled: boolean) => {
+    const newConfig = { ...orgsConfig, [orgLogin]: enabled };
+    setOrgsConfig(newConfig);
+    try {
+      const res = await fetch("/api/user/orgs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ config: newConfig }),
+      });
+      if (res.ok) {
+        toast.success(`Organization ${orgLogin} sync ${enabled ? "enabled" : "disabled"}.`);
+      } else {
+        toast.error("Failed to update organization sync settings.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error updating organization settings.");
+    }
+  };
 
   // Load active repos for spotlight pinning
   useEffect(() => {
@@ -1327,6 +1373,99 @@ function SettingsPageContent() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-[var(--card-foreground)]">
+                GitHub Organizations
+              </h2>
+              <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                Choose which organizations to include or exclude from your dashboard metrics.
+              </p>
+            </div>
+          </div>
+
+          {loadingOrgs ? (
+            <div className="space-y-3">
+              <div className="h-10 bg-[var(--card-muted)] rounded animate-pulse" />
+              <div className="h-10 bg-[var(--card-muted)] rounded animate-pulse" />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {orgAccounts.some((acc) => !acc.hasOrgScope) && (
+                <div className="rounded-lg border border-amber-300/30 bg-amber-500/10 p-4">
+                  <p className="text-sm text-amber-200">
+                    <strong>Action Required:</strong> Organization access is not fully authorized. To display private organization contributions, please sign out and sign back in to grant organization permission (enable the &quot;read:org&quot; scope when prompted).
+                  </p>
+                </div>
+              )}
+
+              {orgAccounts.length === 0 ? (
+                <div className="rounded-lg border border-[var(--border)] bg-[var(--control)] p-4 text-sm text-[var(--muted-foreground)] text-center">
+                  No organizations found.
+                </div>
+              ) : (
+                orgAccounts.map((acc) => (
+                  <div key={acc.githubId} className="space-y-3">
+                    <h3 className="text-sm font-semibold text-[var(--card-foreground)] border-b border-[var(--border)] pb-2">
+                      Organizations ({acc.githubLogin})
+                    </h3>
+                    {acc.orgs.length === 0 ? (
+                      <p className="text-xs text-[var(--muted-foreground)] py-2">
+                        No organization memberships found for this account.
+                      </p>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {acc.orgs.map((org: any) => {
+                          const isEnabled = orgsConfig[org.login] !== false; // default to true
+                          return (
+                            <div
+                              key={org.id}
+                              className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--control)] p-3"
+                            >
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={org.avatarUrl}
+                                  alt={org.login}
+                                  className="w-8 h-8 rounded"
+                                />
+                                <span className="text-sm font-semibold text-[var(--card-foreground)]">
+                                  {org.login}
+                                </span>
+                              </div>
+                              <label className="flex items-center cursor-pointer select-none">
+                                <span className="sr-only">Toggle {org.login}</span>
+                                <div className="relative">
+                                  <input
+                                    type="checkbox"
+                                    checked={isEnabled}
+                                    onChange={(e) => handleToggleOrg(org.login, e.target.checked)}
+                                    className="sr-only"
+                                  />
+                                  <div
+                                    className={`block h-6 w-10 rounded-full transition-colors ${
+                                      isEnabled ? "bg-[var(--accent)]" : "bg-[var(--control)]"
+                                    }`}
+                                  />
+                                  <div
+                                    className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-[var(--card)] transition-transform ${
+                                      isEnabled ? "translate-x-4" : ""
+                                    }`}
+                                  />
+                                </div>
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
 
         <div className="mt-6 rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
