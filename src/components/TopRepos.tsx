@@ -456,9 +456,29 @@ export default function TopRepos() {
           </button>
         </div>
       ) : repos.length === 0 ? (
-        <p className="text-sm text-[var(--muted-foreground)]">No commits in the last {days} days.</p>
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <div className="mb-3 text-4xl">📦</div>
+      
+          <h3 className="text-sm font-semibold text-[var(--card-foreground)]">
+            No repositories found
+          </h3>
+      
+          <p className="mt-2 max-w-sm text-sm text-[var(--muted-foreground)]">
+            Push your first commit on GitHub to get started and see repository activity here.
+          </p>
+      
+          <a
+            href="https://github.com/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-4 inline-flex rounded-md border border-[var(--border)] px-4 py-2 text-sm font-medium hover:bg-[var(--control)]"
+          >
+            Create Repository
+          </a>
+        </div>
       ) : (
       <>
+
         <div className="relative mb-4">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-[var(--muted-foreground)]" aria-hidden="true" />
           <input
