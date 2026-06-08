@@ -18,7 +18,8 @@ import {
   metricsCacheKey,
   withMetricsCache,
 } from "@/lib/metrics-cache";
-import { supabaseAdmin, isSupabaseAdminAvailable } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
+import { isSupabaseAdminAvailable } from "@/lib/supabase-admin";
 import { resolveAppUser } from "@/lib/resolve-user";
 import { normalizeGitHubUsername } from "@/lib/validate-github-username";
 
@@ -121,10 +122,8 @@ async function fetchContributionsForAccount(
   repo?: string | null,
   orgName?: string | null,
   excludedOrgs: string[] = []
-  orgLogin?: string | null,
 ): Promise<ContributionResponse> {
   const repoFilter = repo ? ` repo:${repo}` : "";
-  const orgFilter = orgSearchSegment(orgLogin);
 
   const key = metricsCacheKey(cacheContext.userId, "contributions", {
     days,
@@ -133,7 +132,6 @@ async function fetchContributionsForAccount(
     repo,
     orgName: orgName || undefined,
     excludedOrgs: excludedOrgs.length > 0 ? excludedOrgs.join(",") : undefined,
-    org: orgLogin ?? undefined,
   });
 
   return withMetricsCache(
@@ -165,10 +163,6 @@ async function fetchContributionsForAccount(
       while (page <= 10) {
         const searchUrl = new URL(`${GITHUB_API}/search/commits`);
         searchUrl.searchParams.set("q", q);
-        searchUrl.searchParams.set(
-          "q",
-          `author:${githubLogin} author-date:>=${sinceStr}${repoFilter}${orgFilter}`
-        );
         searchUrl.searchParams.set("per_page", "100");
         searchUrl.searchParams.set("page", String(page));
         searchUrl.searchParams.set("sort", "author-date");
@@ -491,31 +485,6 @@ export async function GET(req: NextRequest) {
   }
 
   if (targetAccountId === "combined") {
-  // org: prefix — filter contributions to a specific GitHub organization.
-  // Uses the primary account's token; no additional account lookup is needed.
-  if (accountId?.startsWith("org:")) {
-    const orgLogin = accountId.slice(4).trim();
-    if (!orgLogin) {
-      return Response.json({ error: "Invalid org identifier" }, { status: 400 });
-    }
-    try {
-      const result = await fetchContributionsForAccount(
-        session.accessToken,
-        session.githubLogin,
-        days,
-        { bypass, userId: session.githubId ?? session.githubLogin },
-        timezone,
-        fromDate,
-        repoParam,
-        orgLogin,
-      );
-      return Response.json(result);
-    } catch {
-      return Response.json({ error: "GitHub API error" }, { status: 502 });
-    }
-  }
-
-  if (accountId === "combined") {
     const accounts = await getAllAccounts(
       {
         token: session.accessToken,
@@ -540,21 +509,6 @@ export async function GET(req: NextRequest) {
         )
       )
     );
-  accounts.map((account) =>
-    fetchContributionsForAccount(
-      account.token,
-      account.githubLogin,
-      days,
-      {
-        bypass,
-        userId: account.githubId,
-      },
-      timezone,
-      fromDate,
-      repoParam
-    )
-  )
-);
 
 
     const rateLimitedResult = results.find(

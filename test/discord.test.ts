@@ -10,7 +10,6 @@ describe("sendDiscordWebhook", () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     vi.stubGlobal("fetch", mockFetch);
 
-    const result = await sendDiscordWebhook("https://discord.com/api/webhooks/1234567890/abc-123_xyz", { test: "payload" });
     const result = await sendDiscordWebhook("https://discord.com/api/webhooks/1234567890/abc-xyz", { test: "payload" });
     expect(result).toBe(true);
   });
@@ -19,7 +18,6 @@ describe("sendDiscordWebhook", () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: false, status: 400, statusText: "Bad Request" });
     vi.stubGlobal("fetch", mockFetch);
 
-    await expect(sendDiscordWebhook("https://discord.com/api/webhooks/1234567890/abc-123_xyz", { test: "payload" })).rejects.toThrow("Discord Webhook failed: 400 Bad Request");
     await expect(sendDiscordWebhook("https://discord.com/api/webhooks/1234567890/abc-xyz", { test: "payload" })).rejects.toThrow("Discord Webhook failed: 400 Bad Request");
   });
 });
@@ -33,9 +31,6 @@ describe("sendTestNotification", () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     vi.stubGlobal("fetch", mockFetch);
 
-    const result = await sendTestNotification("https://discord.com/api/webhooks/1234567890/abc-123_xyz", "testuser");
-    expect(result).toBe(true);
-    expect(mockFetch).toHaveBeenCalledWith("https://discord.com/api/webhooks/1234567890/abc-123_xyz", expect.objectContaining({
     const result = await sendTestNotification("https://discord.com/api/webhooks/1234567890/abc-xyz", "testuser");
     expect(result).toBe(true);
     expect(mockFetch).toHaveBeenCalledWith("https://discord.com/api/webhooks/1234567890/abc-xyz", expect.objectContaining({
@@ -54,7 +49,6 @@ describe("sendStreakAtRisk", () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     vi.stubGlobal("fetch", mockFetch);
 
-    const result = await sendStreakAtRisk("https://discord.com/api/webhooks/1234567890/abc-123_xyz", "testuser", 5);
     const result = await sendStreakAtRisk("https://discord.com/api/webhooks/1234567890/abc-xyz", "testuser", 5);
     expect(result).toBe(true);
   });
@@ -69,7 +63,6 @@ describe("sendMilestoneReached", () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     vi.stubGlobal("fetch", mockFetch);
 
-    const result = await sendMilestoneReached("https://discord.com/api/webhooks/1234567890/abc-123_xyz", "testuser", 30);
     const result = await sendMilestoneReached("https://discord.com/api/webhooks/1234567890/abc-xyz", "testuser", 30);
     expect(result).toBe(true);
   });
@@ -84,7 +77,6 @@ describe("sendWeeklySummary", () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true, status: 200 });
     vi.stubGlobal("fetch", mockFetch);
 
-    const result = await sendWeeklySummary("https://discord.com/api/webhooks/1234567890/abc-123_xyz", "testuser", { commits: 10, prs: 3, activeDays: 5 });
     const result = await sendWeeklySummary("https://discord.com/api/webhooks/1234567890/abc-xyz", "testuser", { commits: 10, prs: 3, activeDays: 5 });
     expect(result).toBe(true);
   });

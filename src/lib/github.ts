@@ -164,9 +164,6 @@ export async function fetchIssuesMetrics(
 
   const searchRes = await githubFetch(
     `https://api.github.com/search/issues?q=${q}+created:>=${since30d.toISOString().slice(0, 10)}&per_page=100`,
-    `${GITHUB_API}/search/issues?q=type:issue+author:@me+created:>=${since30d
-      .toISOString()
-      .slice(0, 10)}&per_page=100`,
     { headers, cache: "no-store" }
   );
 
@@ -201,17 +198,11 @@ export async function fetchIssuesMetrics(
 
   const thisMonthRes = await githubFetch(
     `https://api.github.com/search/issues?q=${q}+created:>=${thisMonthStart.toISOString().slice(0, 10)}&per_page=1`,
-    `${GITHUB_API}/search/issues?q=type:issue+author:@me+created:>=${thisMonthStart
-      .toISOString()
-      .slice(0, 10)}&per_page=1`,
     { headers, cache: "no-store" }
   );
 
   const lastMonthRes = await githubFetch(
     `https://api.github.com/search/issues?q=${q}+created:${lastMonthStart.toISOString().slice(0, 10)}..${lastMonthEnd.toISOString().slice(0, 10)}&per_page=1`,
-    `${GITHUB_API}/search/issues?q=type:issue+author:@me+created:${lastMonthStart
-      .toISOString()
-      .slice(0, 10)}..${lastMonthEnd.toISOString().slice(0, 10)}&per_page=1`,
     { headers, cache: "no-store" }
   );
 

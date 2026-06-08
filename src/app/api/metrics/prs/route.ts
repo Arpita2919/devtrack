@@ -10,7 +10,8 @@ import {
   withMetricsCache,
 } from "@/lib/metrics-cache";
 import { resolveAppUser, type AppUser } from "@/lib/resolve-user";
-import { supabaseAdmin, isSupabaseAdminAvailable } from "@/lib/supabase";
+import { supabaseAdmin } from "@/lib/supabase";
+import { isSupabaseAdminAvailable } from "@/lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
 

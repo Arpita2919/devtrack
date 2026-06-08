@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 describe("supabase admin guard", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.resetModules();
@@ -57,6 +60,9 @@ describe("supabase admin guard", () => {
 });
 
 describe("supabase browser client guard", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.resetModules();

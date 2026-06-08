@@ -92,11 +92,6 @@ describe("GET /api/goals", () => {
       buildGoal({ id: "goal-1" }),
       buildGoal({ id: "goal-2", title: "Second goal" }),
     ];
-    mocks.supabaseFrom.mockImplementation((table: string) => {
-      if (table === "goals") {
-        const limitFn = vi.fn().mockResolvedValue({ data: goals, error: null });
-        const orderFn = vi.fn().mockReturnValue({ limit: limitFn });
-        const eqFn = vi.fn().mockReturnValue({ order: orderFn });
     const limitFn = vi.fn().mockResolvedValue({ data: goals, error: null });
     const orderFn = vi.fn().mockReturnValue({ limit: limitFn });
     const eqFn = vi.fn().mockReturnValue({ order: orderFn });
@@ -112,11 +107,6 @@ describe("GET /api/goals", () => {
         };
       }
       if (table === "goal_history") {
-        const orderFn = vi.fn().mockResolvedValue({ data: [], error: null });
-        const inFn = vi.fn().mockReturnValue({ order: orderFn });
-        const eqFn = vi.fn().mockReturnValue({ in: inFn });
-        return {
-          select: vi.fn().mockReturnValue({ eq: eqFn }),
         return {
           select: vi.fn().mockReturnValue({ eq: eqFn2 }),
         };
@@ -131,24 +121,11 @@ describe("GET /api/goals", () => {
   });
 
   it("returns an empty array when the user has no goals", async () => {
-    mocks.supabaseFrom.mockImplementation((table: string) => {
-      if (table === "goals") {
-        const limitFn = vi.fn().mockResolvedValue({ data: [], error: null });
-        const orderFn = vi.fn().mockReturnValue({ limit: limitFn });
-        const eqFn = vi.fn().mockReturnValue({ order: orderFn });
-        return {
-          select: vi.fn().mockReturnValue({ eq: eqFn }),
-        };
-      }
-      return {
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            in: vi.fn().mockReturnValue({
-              order: vi.fn().mockResolvedValue({ data: [], error: null }),
-            }),
-          }),
-        }),
-      };
+    const limitFn = vi.fn().mockResolvedValue({ data: [], error: null });
+    const orderFn = vi.fn().mockReturnValue({ limit: limitFn });
+    const eqFn = vi.fn().mockReturnValue({ order: orderFn });
+    mocks.supabaseFrom.mockReturnValue({
+      select: vi.fn().mockReturnValue({ eq: eqFn }),
     });
     const res = await GET();
     const body = await res.json();

@@ -106,9 +106,6 @@ describe("Local coding API key credential isolation — #1689", () => {
 
   // ── key creation ──────────────────────────────────────────────────────────
 
-  it("POST /local-coding/keys stores the hash in api_key_hash and display prefix in api_key", async () => {
-    keysMocks.getServerSession.mockResolvedValue({ githubId: "gh-1", githubLogin: "alice" });
-    keysMocks.resolveAppUser.mockResolvedValue({ id: "user-1" });
   it("stores a display prefix in api_key and the SHA-256 hash in api_key_hash", async () => {
     m.getServerSession.mockResolvedValue({
       githubId: "gh-1",
@@ -146,17 +143,6 @@ describe("Local coding API key credential isolation — #1689", () => {
     expect(res.status).toBe(200);
 
     const body = await res.json();
-    const returnedPlaintextKey = body.key.api_key;
-    const expectedHash = sha256(returnedPlaintextKey);
-    const expectedPrefix = returnedPlaintextKey.slice(0, 8);
-
-    // api_key must hold the non-sensitive display prefix, api_key_hash holds the SHA-256 digest
-    expect(insertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        api_key: expectedPrefix,
-        api_key_hash: expectedHash,
-      })
-    );
     const rawKey: string = body.key.api_key;
     const expectedHash = sha256(rawKey);
     const expectedPrefix = rawKey.slice(0, 8);
