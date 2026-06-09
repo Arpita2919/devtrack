@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { CollaborationRoom, RoomMember, RoomMessage } from '@/types/rooms';
@@ -23,9 +23,23 @@ export default function RoomClient({
   const [messages, setMessages] = useState<RoomMessage[]>(initialMessages);
   const [members, setMembers] = useState<RoomMember[]>(initialMembers);
 
+  // Optimistic update: immediately show the message the current user just sent.
   function handleSent(msg: RoomMessage) {
-    setMessages((prev) => [...prev, msg]);
+    setMessages((prev) => {
+      if (prev.some((m) => m.id === msg.id)) return prev;
+      return [...prev, msg];
+    });
   }
+
+  // Called by MessageFeed's polling loop with messages from other participants.
+  // useCallback prevents the effect in MessageFeed from restarting on every render.
+  const handleNewMessages = useCallback((incoming: RoomMessage[]) => {
+    setMessages((prev) => {
+      const existingIds = new Set(prev.map((m) => m.id));
+      const novel = incoming.filter((m) => !existingIds.has(m.id));
+      return novel.length > 0 ? [...prev, ...novel] : prev;
+    });
+  }, []);
 
   function handleMemberAdded(username: string) {
     setMembers((prev) => [
@@ -87,7 +101,8 @@ export default function RoomClient({
           <MessageFeed
             roomId={room.id}
             currentUser={currentUser}
-            initialMessages={messages}
+            messages={messages}
+            onNewMessages={handleNewMessages}
           />
           <MessageInput roomId={room.id} onSent={handleSent} />
         </div>

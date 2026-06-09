@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { getRoomById, getRoomMessages, sendRoomMessage } from '@/lib/supabase-rooms';
+import { getRoomById, getRoomMessages, getRoomMessagesSince, sendRoomMessage } from '@/lib/supabase-rooms';
 import { validateTextInput } from '@/lib/sanitize';
 import { NextResponse } from 'next/server';
 
@@ -15,6 +15,11 @@ export async function GET(
   if (!room) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   const url = new URL(req.url);
   const before = url.searchParams.get('before') ?? undefined;
+  const after = url.searchParams.get('after') ?? undefined;
+  if (after) {
+    const messages = await getRoomMessagesSince(params.roomId, after);
+    return NextResponse.json(messages);
+  }
   const messages = await getRoomMessages(params.roomId, 50, before);
   return NextResponse.json(messages);
 }
