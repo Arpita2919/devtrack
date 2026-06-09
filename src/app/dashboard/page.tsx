@@ -1,4 +1,4 @@
-﻿import TodayFocusHero from "@/components/TodayFocusHero";
+import TodayFocusHero from "@/components/TodayFocusHero";
 import DashboardHeader from "@/components/DashboardHeader";
 import ExportButton from "@/components/ExportButton";
 import Link from "next/link";
