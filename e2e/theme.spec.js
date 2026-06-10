@@ -76,7 +76,6 @@ test("theme selector switches between themes on the dashboard", async ({ page })
     page.getByRole("heading", { name: "Dashboard", exact: true })
   ).toBeVisible({ timeout: 30_000 });
 
-<<<<<<< HEAD
   const themeSelect = page.getByRole("combobox", {
     name: "Select dashboard theme",
   });
@@ -90,22 +89,6 @@ test("theme selector switches between themes on the dashboard", async ({ page })
   await expect(themeSelect).toHaveValue(nextTheme);
   const stored = await page.evaluate(() => localStorage.getItem("theme"));
   expect(stored).toBe(nextTheme);
-=======
-  // The DashboardHeader provides the ThemeToggle on the dashboard
-  const select = page.getByRole("combobox", { name: "Select dashboard theme" }).first();
-  await expect(select).toBeVisible();
-
-  // Initial theme should have class 'dark'
-  await expect(page.locator("html")).toHaveClass(/dark/);
-
-  // Switch to a light theme
-  await select.selectOption("modern-light-blue");
-  await expect(page.locator("html")).not.toHaveClass(/dark/);
-
-  // Switch to another dark theme
-  await select.selectOption("nordic-frost");
-  await expect(page.locator("html")).toHaveClass(/dark/);
->>>>>>> 32195a0 (fix(e2e): update theme toggle tests to support new multi-theme select dropdown UI)
 });
 
 /**
@@ -127,7 +110,6 @@ test("public profile page theme selector works without authentication", async ({
   // Confirm we're on the public profile route (no auth redirect)
   await expect(page).toHaveURL(/\/u\//);
 
-<<<<<<< HEAD
   // AppNavbar uses the compact theme menu on public routes
   const themeToggle = page.getByRole("banner").getByRole("button", { name: "Choose theme" });
   await expect(themeToggle).toBeVisible({ timeout: 10000 });
@@ -143,16 +125,4 @@ test("public profile page theme selector works without authentication", async ({
   // Theme preference must be persisted to localStorage
   const stored = await page.evaluate(() => localStorage.getItem("theme"));
   expect(stored).toBe(nextTheme);
-=======
-  // ThemeToggle must be present in the AppNavbar and functional without login
-  const select = page.getByRole("banner").getByRole("combobox", { name: "Select dashboard theme" });
-  await expect(select).toBeVisible({ timeout: 10000 });
-
-  // Select a theme
-  await select.selectOption("modern-light-blue");
-
-  // Theme preference must be persisted to localStorage
-  const stored = await page.evaluate(() => localStorage.getItem("theme"));
-  expect(stored).toBe("modern-light-blue");
->>>>>>> 32195a0 (fix(e2e): update theme toggle tests to support new multi-theme select dropdown UI)
 });
