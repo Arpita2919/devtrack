@@ -240,7 +240,7 @@ describe("Local coding API key credential isolation — #1689", () => {
     await syncPost(req);
 
     // authEq is called with ("api_key_hash", hash) — never with "api_key".
-    const calls: [string, string][] = authEq.mock.calls;
+    const calls = authEq.mock.calls as [string, string][];
     expect(calls.every(([col]) => col === "api_key_hash")).toBe(true);
   });
 
