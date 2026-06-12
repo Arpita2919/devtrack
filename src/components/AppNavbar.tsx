@@ -21,8 +21,8 @@ function isActivePath(pathname: string, href: string) {
 
 const MONO = "var(--font-jetbrains, ui-monospace, monospace)";
 
-// AppNavbar component provides a persistent, responsive navigation bar 
-// for improved app-wide navigation and discoverability (Resolves #1330).
+// AppNavbar component provides a persistent, responsive navigation bar
+// for improved app-wide navigation and discoverability.
 // Features included: Logo, Navigation links, Auth state handling, Active state indicators, and Mobile hamburger menu.
 export default function AppNavbar() {
   const t = useTranslations("navigation");
@@ -134,7 +134,6 @@ export default function AppNavbar() {
         <div className="hidden shrink-0 items-center gap-2 md:flex">
           {/* Show ThemeToggle in navbar except on dashboard, where DashboardHeader provides it */}
           {!isDashboardRoute && <ThemeToggle variant="compact" />}
-          
           {/* Auth state - Shows user identity and settings when logged in, or generic sign-in when logged out */}
           {isAuthenticated ? (
             !isDashboardRoute && (
@@ -177,7 +176,6 @@ export default function AppNavbar() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
         {/* Mobile hamburger menu - Collapses links into a dropdown for smaller viewports */}
         <button
           type="button"
