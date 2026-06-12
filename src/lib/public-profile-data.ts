@@ -119,7 +119,8 @@ export async function fetchPublicContributions(
 
 export async function fetchPublicStreak(
   username: string,
-  token?: string
+  token?: string,
+  timezone?: string
 ): Promise<StreakData> {
   const since = new Date();
   since.setDate(since.getDate() - 90);
@@ -136,9 +137,21 @@ export async function fetchPublicStreak(
     items: Array<{ commit: { author: { date: string } } }>;
   };
 
+  const tz = timezone || "UTC";
   const daySet: Record<string, true> = {};
   for (const item of data.items) {
-    daySet[item.commit.author.date.slice(0, 10)] = true;
+    try {
+      const d = new Date(item.commit.author.date);
+      const tzDate = new Intl.DateTimeFormat("en-CA", {
+        timeZone: tz,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(d);
+      daySet[tzDate] = true;
+    } catch (e) {
+      daySet[item.commit.author.date.slice(0, 10)] = true;
+    }
   }
   const commitDays = Object.keys(daySet).sort();
 
@@ -163,8 +176,26 @@ export async function fetchPublicStreak(
   runs.push({ end: commitDays[commitDays.length - 1], length: currentRun });
 
   const lastDay = commitDays[commitDays.length - 1];
-  const today = toDateStr(new Date());
-  const yesterday = toDateStr(new Date(Date.now() - 86400000));
+  const now = new Date();
+  let today, yesterday;
+  try {
+    today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now);
+    const yDate = new Date(now.getTime() - 86400000);
+    yesterday = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(yDate);
+  } catch (e) {
+    today = toDateStr(now);
+    yesterday = toDateStr(new Date(now.getTime() - 86400000));
+  }
   const lastRun = runs[runs.length - 1];
   const currentStreak = lastRun.end === today || lastRun.end === yesterday ? lastRun.length : 0;
 
@@ -279,7 +310,7 @@ export async function fetchPublicProfile(
   ] = await Promise.all([
     fetchPublicTopRepos(user.github_login, githubToken, 30),
     fetchPublicContributions(user.github_login, githubToken, 30),
-    fetchPublicStreak(user.github_login, githubToken),
+    fetchPublicStreak(user.github_login, githubToken, user.timezone),
     fetchPublicTopLanguages(user.github_login, githubToken),
     fetchPublicPullRequests(user.github_login, githubToken),
     options.includeAchievements
