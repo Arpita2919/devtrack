@@ -292,9 +292,9 @@ export default function NotificationBell() {
                   }`}
                 >
                   <p className="text-sm text-[var(--card-foreground)]">
-                    {debouncedSearchQuery ? (
-                      // Highlight matching text (case-insensitive)
-                      n.message.split(new RegExp(`(${debouncedSearchQuery})`, "gi")).map((part: string, i: number) =>
+                    {debouncedSearchQuery ? (() => {
+                      const escapedQuery = debouncedSearchQuery.replace(/[/\-\\^$*+?.()|[\]{}]/g, "\\$&");
+                      return n.message.split(new RegExp(`(${escapedQuery})`, "gi")).map((part: string, i: number) =>
                         part.toLowerCase() === debouncedSearchQuery.toLowerCase() ? (
                           <mark key={i} className="bg-[var(--accent)]/20 text-inherit rounded-sm px-0.5">
                             {part}
@@ -302,8 +302,8 @@ export default function NotificationBell() {
                         ) : (
                           <span key={i}>{part}</span>
                         )
-                      )
-                    ) : (
+                      );
+                    })() : (
                       n.message
                     )}
                   </p>
