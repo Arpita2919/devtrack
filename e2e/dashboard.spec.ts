@@ -395,6 +395,8 @@ test("[Dashboard E2E] no uncaught console errors on dashboard load", async ({
       !e.includes("net::ERR_") &&
       !e.includes("ERR_INTERNET_DISCONNECTED") &&
       !e.includes("vercel-scripts.com") && // lgtm[js/incomplete-url-substring-sanitization] - filtering test console noise, not sanitizing user input
+      !e.includes("_vercel/insights") &&
+      !e.includes("_vercel/speed-insights") &&
       !e.includes("Content Security Policy") &&
       !e.includes("Hydration failed") &&
       !e.includes("Expected server HTML") &&
