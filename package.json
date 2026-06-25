@@ -111,13 +111,5 @@
     "@parcel/watcher-linux-x64-glibc": "^2.5.6",
     "@parcel/watcher-linux-x64-musl": "^2.5.6",
     "@swc/core-linux-x64-gnu": "^1.15.41"
-  },
-  "pnpm": {
-    "overrides": {
-      "serialize-javascript": ">=7.0.3",
-      "uuid": ">=9.0.1",
-      "js-yaml": ">=4.1.0",
-      "postcss": ">=8.4.31"
-    }
   }
 }
