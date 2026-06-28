@@ -26,6 +26,26 @@ The complete OpenAPI 3.1 specification is available at:
 
 Most user-specific endpoints require authentication through NextAuth session cookies.
 
+### Authentication Methods
+
+**Cookie-based Authentication (Recommended)**
+- Uses NextAuth session cookies (`next-auth.session-token`)
+- Automatically handled when using the DevTrack web interface
+- For API calls, include the session cookie in the `Cookie` header
+
+**Bearer Token Authentication**
+- Some endpoints support bearer token authentication
+- Used for cron jobs and webhooks
+- Include `Authorization: Bearer <TOKEN>` header
+
+### Session Cookie Format
+
+```
+Cookie: next-auth.session-token=YOUR_SESSION_TOKEN
+```
+
+### Unauthenticated Requests
+
 Unauthenticated requests typically return:
 
 ```json
@@ -35,6 +55,42 @@ Unauthenticated requests typically return:
 ```
 
 with HTTP status `401`.
+
+### Rate Limits
+
+- **Public endpoints** (`/api/public/*`): Rate-limited to prevent abuse
+- **Authenticated endpoints**: No strict rate limiting for authenticated users
+- **GitHub API**: Subject to GitHub's rate limits (5000 requests/hour for authenticated, 60/hour for unauthenticated)
+- **Webhooks**: Validated for SSRF protection before delivery
+
+### Authentication Code Examples
+
+```bash
+# curl with cookie authentication
+curl http://localhost:3000/api/goals \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN"
+```
+
+```javascript
+// JavaScript with cookie authentication
+const response = await fetch('http://localhost:3000/api/goals', {
+  headers: {
+    'Cookie': 'next-auth.session-token=YOUR_SESSION_TOKEN'
+  }
+});
+```
+
+```python
+# Python with cookie authentication
+import requests
+
+response = requests.get(
+    'http://localhost:3000/api/goals',
+    headers={
+        'Cookie': 'next-auth.session-token=YOUR_SESSION_TOKEN'
+    }
+)
+```
 
 ---
 
@@ -63,6 +119,7 @@ with HTTP status `401`.
 
 #### Example: Create a goal
 
+**Request:**
 ```json
 POST /api/goals
 {
@@ -70,6 +127,64 @@ POST /api/goals
   "target": 20,
   "unit": "commits"
 }
+```
+
+**Response:**
+```json
+{
+  "id": "goal_abc123",
+  "title": "Weekly Commits",
+  "target": 20,
+  "current": 0,
+  "unit": "commits",
+  "createdAt": "2025-06-15T10:00:00Z"
+}
+```
+
+**Code Examples:**
+
+```bash
+# curl
+curl -X POST http://localhost:3000/api/goals \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN" \
+  -d '{"title":"Weekly Commits","target":20,"unit":"commits"}'
+```
+
+```javascript
+// JavaScript (fetch)
+const response = await fetch('http://localhost:3000/api/goals', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Cookie': 'next-auth.session-token=YOUR_SESSION_TOKEN'
+  },
+  body: JSON.stringify({
+    title: 'Weekly Commits',
+    target: 20,
+    unit: 'commits'
+  })
+});
+const goal = await response.json();
+```
+
+```python
+# Python (requests)
+import requests
+
+response = requests.post(
+    'http://localhost:3000/api/goals',
+    headers={
+        'Content-Type': 'application/json',
+        'Cookie': 'next-auth.session-token=YOUR_SESSION_TOKEN'
+    },
+    json={
+        'title': 'Weekly Commits',
+        'target': 20,
+        'unit': 'commits'
+    }
+)
+goal = response.json()
 ```
 
 ---
@@ -126,6 +241,7 @@ All metrics routes require authentication. Most support a `?refresh=1` or `?bypa
 
 #### Example: GET /api/notifications
 
+**Response:**
 ```json
 [
   {
@@ -136,6 +252,37 @@ All metrics routes require authentication. Most support a `?refresh=1` or `?bypa
     "created_at": "2025-06-15T10:00:00Z"
   }
 ]
+```
+
+**Code Examples:**
+
+```bash
+# curl
+curl http://localhost:3000/api/notifications \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN"
+```
+
+```javascript
+// JavaScript (fetch)
+const response = await fetch('http://localhost:3000/api/notifications', {
+  headers: {
+    'Cookie': 'next-auth.session-token=YOUR_SESSION_TOKEN'
+  }
+});
+const notifications = await response.json();
+```
+
+```python
+# Python (requests)
+import requests
+
+response = requests.get(
+    'http://localhost:3000/api/notifications',
+    headers={
+        'Cookie': 'next-auth.session-token=YOUR_SESSION_TOKEN'
+    }
+)
+notifications = response.json()
 ```
 
 ---
@@ -162,6 +309,7 @@ All metrics routes require authentication. Most support a `?refresh=1` or `?bypa
 
 #### Example: GET /api/user/settings
 
+**Response:**
 ```json
 {
   "timezone": "UTC",
@@ -170,6 +318,37 @@ All metrics routes require authentication. Most support a `?refresh=1` or `?bypa
   "discordWebhookUrl": null,
   "wakatimeConnected": false
 }
+```
+
+**Code Examples:**
+
+```bash
+# curl
+curl http://localhost:3000/api/user/settings \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN"
+```
+
+```javascript
+// JavaScript (fetch)
+const response = await fetch('http://localhost:3000/api/user/settings', {
+  headers: {
+    'Cookie': 'next-auth.session-token=YOUR_SESSION_TOKEN'
+  }
+});
+const settings = await response.json();
+```
+
+```python
+# Python (requests)
+import requests
+
+response = requests.get(
+    'http://localhost:3000/api/user/settings',
+    headers={
+        'Cookie': 'next-auth.session-token=YOUR_SESSION_TOKEN'
+    }
+)
+settings = response.json()
 ```
 
 ---
@@ -444,3 +623,155 @@ When adding or modifying API routes:
 4. Update this document if a new API category or major endpoint group is introduced.
 
 Keeping these resources synchronized ensures contributors, self-hosters, and integrators always have accurate API documentation.
+
+---
+
+## Error Codes and Troubleshooting
+
+### Common HTTP Status Codes
+
+| Status Code | Meaning | Common Causes |
+|-------------|---------|----------------|
+| `200` | OK | Request successful |
+| `201` | Created | Resource created successfully |
+| `400` | Bad Request | Invalid request body or parameters |
+| `401` | Unauthorized | Missing or invalid authentication |
+| `403` | Forbidden | Insufficient permissions |
+| `404` | Not Found | Resource does not exist |
+| `429` | Too Many Requests | Rate limit exceeded |
+| `500` | Internal Server Error | Server-side error |
+| `502` | Bad Gateway | GitHub API or external service error |
+| `503` | Service Unavailable | Temporary service outage |
+
+### Error Response Format
+
+Most errors return a JSON response with an `error` field:
+
+```json
+{
+  "error": "Error message describing what went wrong"
+}
+```
+
+### Common Error Scenarios
+
+#### Authentication Errors (401)
+
+**Problem:** Missing or invalid session cookie
+
+**Solution:**
+- Ensure you're logged into DevTrack
+- Check that the session cookie is included in requests
+- Verify the cookie hasn't expired
+- Try re-authenticating through the web interface
+
+```bash
+# Check if you're authenticated
+curl -v http://localhost:3000/api/goals \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN"
+```
+
+#### GitHub Rate Limiting (429)
+
+**Problem:** GitHub API rate limit exceeded
+
+**Solution:**
+- Wait for the rate limit to reset (typically 1 hour)
+- Use authenticated GitHub requests (5000 requests/hour vs 60/hour)
+- Implement caching to reduce API calls
+- Use the `?refresh=1` parameter sparingly
+
+**Error Response:**
+```json
+{
+  "error": "GitHub rate limit reached. Please try again later."
+}
+```
+
+#### Webhook Signature Validation (401)
+
+**Problem:** Invalid GitHub webhook signature
+
+**Solution:**
+- Ensure `GITHUB_WEBHOOK_SECRET` is set in environment variables
+- Verify the webhook secret matches between GitHub and DevTrack
+- Check that the webhook is configured correctly in GitHub settings
+
+#### AI Service Unavailable (500)
+
+**Problem:** AI service (Groq/Anthropic) not configured or unavailable
+
+**Solution:**
+- Ensure `GROQ_API_KEY` or `ANTHROPIC_API_KEY` is set
+- Check the API key is valid and has credits
+- Verify network connectivity to the AI service
+- Try again later if the service is temporarily down
+
+**Error Response:**
+```json
+{
+  "error": "AI service unavailable"
+}
+```
+
+#### Invalid Request Body (400)
+
+**Problem:** Missing required fields or invalid data types
+
+**Solution:**
+- Check the request body matches the expected schema
+- Ensure all required fields are included
+- Verify data types are correct (strings, numbers, etc.)
+- Check for typos in field names
+
+**Example Error:**
+```json
+{
+  "error": "Missing required field: title"
+}
+```
+
+### Troubleshooting Steps
+
+1. **Check Authentication**
+   ```bash
+   curl -v http://localhost:3000/api/user/settings \
+     -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN"
+   ```
+
+2. **Verify Endpoint URL**
+   - Ensure the URL is correct
+   - Check for typos in the path
+   - Verify the HTTP method (GET, POST, etc.)
+
+3. **Check Request Body**
+   - Validate JSON syntax
+   - Ensure Content-Type header is set to `application/json`
+   - Verify all required fields are present
+
+4. **Review Server Logs**
+   - Check the DevTrack server logs for detailed error messages
+   - Look for stack traces or additional context
+
+5. **Test with Swagger UI**
+   - Visit `http://localhost:3000/api-docs`
+   - Use the interactive documentation to test endpoints
+   - Swagger UI provides detailed error information
+
+6. **Check Environment Variables**
+   - Verify all required environment variables are set
+   - Check for typos in variable names
+   - Ensure API keys are valid and not expired
+
+### Getting Help
+
+If you encounter issues not covered here:
+
+1. Check the [GitHub Issues](https://github.com/Priyanshu-byte-coder/devtrack/issues)
+2. Review the [Contributing Guidelines](CONTRIBUTING.md)
+3. Join the community Discord (if available)
+4. Create a new issue with:
+   - The endpoint you're trying to access
+   - The request you're making (without sensitive data)
+   - The error response you're receiving
+   - Steps to reproduce the issue
