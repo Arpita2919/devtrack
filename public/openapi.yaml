@@ -637,7 +637,7 @@ paths:
   /api/leaderboard:
     get:
       tags: [Leaderboard]
-      summary: Get public leaderboard
+      summary: Get public leaderboard rankings
       parameters:
         - name: lang
           in: query
@@ -1008,6 +1008,7 @@ paths:
       responses:
         '200':
           description: Invite link generated
+          description: Public profile data
           content:
             application/json:
               schema:
@@ -1028,6 +1029,7 @@ paths:
       responses:
         '200':
           description: WakaTime status
+          description: Privacy settings
           content:
             application/json:
               schema:
